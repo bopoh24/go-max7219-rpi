@@ -1,6 +1,6 @@
 # Go-Max7219
 
-Library written in Go to allow controlling of the MAX7219LED module.  Source forked from https://github.com/d2r2/go-max7219
+Library written in Go to allow controlling of the MAX7219 LED module.  Source forked from https://github.com/d2r2/go-max7219
 
 ## Enhancements ##
 
