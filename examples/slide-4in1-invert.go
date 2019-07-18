@@ -9,7 +9,7 @@ import (
 
 func main() {
 
-	mtx := max7219.NewMatrix(4, max7219.RotateAntiClockwiseReverse)
+	mtx := max7219.NewMatrix(4, max7219.RotateAntiClockwiseInvert)
 	err := mtx.Open(0, 0, 1)
 	if err != nil {
 		log.Fatal(err)
@@ -20,7 +20,7 @@ func main() {
 
 	time.Sleep(1 * time.Second)
 
-	mtx = max7219.NewMatrix(4, max7219.RotateClockwiseReverse)
+	mtx = max7219.NewMatrix(4, max7219.RotateClockwiseInvert)
 	err = mtx.Open(0, 0, 1)
 	if err != nil {
 		log.Fatal(err)
