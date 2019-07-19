@@ -6,8 +6,8 @@ Library written in Go to allow controlling of the MAX7219 LED module.  Source fo
 
 * Works with pre-assembled 4-in-1 MAX7219 LED module matrices.
 * Set the rotational direction of the MAX7219 LED modules.
-    * Some of the pre-assembled 4-in-1 LED modules are connected "upsidedown" to the circuit board.  Using the <i>reversed</i> rotational directions allows for supporting of these MAX7219 4-in-1 LED module matrices.
-* Sliding of text with blank padding before and after text
+    * Some of the pre-assembled 4-in-1 LED modules are connected "upsidedown" to the circuit board.  Using the <i>inverted</i> rotational directions allows for supporting of these MAX7219 4-in-1 LED module matrices.
+* Sliding of text with blank padding before and after text.
 
 ## Usage ##
 
@@ -17,10 +17,13 @@ Library written in Go to allow controlling of the MAX7219 LED module.  Source fo
 4) run to end (or ctrl-c to quit)
 
 Examples filenames
+* chars-4in1.go
 * chars.go
+* font-4in1.go
+* font.go
 * slide.go
 * slide-4in1.go
-* slide-4in1-reverse.go
+* slide-4in1-invert.go
 
 ## Compatibility ##
 
