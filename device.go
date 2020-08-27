@@ -170,7 +170,6 @@ func (this *Device) ClearAll(redraw bool) error {
 
 func (this *Device) ScrollLeft(redraw bool) error {
 	this.buffer = append(this.buffer[1:], 0)
-	log.Debug("Buffer: %v\n", this.buffer)
 	if redraw {
 		err := this.Flush()
 		if err != nil {

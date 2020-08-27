@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"time"
+
 	//"strings"
 
 	"golang.org/x/text/encoding"
@@ -14,15 +15,15 @@ import (
 type Rotation int
 
 const (
-	RotateNone					Rotation = 0	// No rotation needed (normally used when individual LED modules make up matrix)
-	RotateClockwise				Rotation = 1	// Used to rotate 4 in 1 LED matrix clockwise
-	RotateAntiClockwise			Rotation = 2	// Used to rotate 4 in 1 LED matrix anti-clockwise
-	RotateClockwiseInvert 		Rotation = 3	// Used to rotate 4 in 1 LED matrix clockwise (sometimes the modules are 180 degrees to the other 4 in 1 modules)
-	RotateAntiClockwiseInvert	Rotation = 4	// Used to rotate 4 in 1 LED matrix anti-clockwise (sometimes the modules are 180 degrees to the other 4 in 1 modules)
- )
+	RotateNone                Rotation = 0 // No rotation needed (normally used when individual LED modules make up matrix)
+	RotateClockwise           Rotation = 1 // Used to rotate 4 in 1 LED matrix clockwise
+	RotateAntiClockwise       Rotation = 2 // Used to rotate 4 in 1 LED matrix anti-clockwise
+	RotateClockwiseInvert     Rotation = 3 // Used to rotate 4 in 1 LED matrix clockwise (sometimes the modules are 180 degrees to the other 4 in 1 modules)
+	RotateAntiClockwiseInvert Rotation = 4 // Used to rotate 4 in 1 LED matrix anti-clockwise (sometimes the modules are 180 degrees to the other 4 in 1 modules)
+)
 
 type Matrix struct {
-	Device *Device
+	Device   *Device
 	Rotation Rotation
 }
 
@@ -43,7 +44,7 @@ func (this *Matrix) Close() {
 
 func (this *Matrix) Clear() {
 	for count := 0; count < this.Device.GetCascadeCount(); count++ {
-		this.OutputChar(count, FontCP437,' ', true)
+		this.OutputChar(count, FontCP437, ' ', true)
 	}
 }
 
@@ -93,7 +94,6 @@ func preparePatterns(text []byte, font [][]byte,
 		limits = append(limits, []int{start, end})
 	}
 	averageWidth := totalWidth / len(text)
-	log.Debug("Average width: %d\n", averageWidth)
 	var buf []byte
 	for i := 0; i < len(patrns); i++ {
 		if condenseLetterPattern {
@@ -202,9 +202,9 @@ func convertUnicodeToAscii(text string,
 
 // Show message sliding it by led matrix from the right to left.
 func (this *Matrix) SlideMessage(text string, font Font, condensePattern bool, pixelDelay time.Duration) error {
-	
+
 	// No rotation configured, do normal scrolling
-	if (this.Rotation == RotateNone) {
+	if this.Rotation == RotateNone {
 
 		b := convertUnicodeToAscii(text, font.GetCodePage())
 		buffer := preparePatterns(b, font.GetLetterPatterns(), condensePattern)
@@ -222,31 +222,31 @@ func (this *Matrix) SlideMessage(text string, font Font, condensePattern bool, p
 				return err
 			}
 		}
-	
-	// Rotation configured, do "special" scrolling
+
+		// Rotation configured, do "special" scrolling
 	} else {
-		
+
 		b := convertUnicodeToAscii(text, font.GetCodePage())
 		buffer := preparePatterns(b, font.GetLetterPatterns(), condensePattern)
-		
+
 		// Add empty chars onto start of buffer so it can start sliding "off-screen" (8 bytes per LED module)
-		buffer = append(make([]byte, this.Device.GetCascadeCount() * 8), buffer...)  
-		
+		buffer = append(make([]byte, this.Device.GetCascadeCount()*8), buffer...)
+
 		//Start sliding
 		var shiftCount = 0
-		for { 
+		for {
 			this.Device.Flush()
-			
+
 			// End of buffer reached
 			if shiftCount > len(buffer) {
 				break
 			}
 
 			// Build up the buffers to be displayed
-			var shiftBuffer = append(buffer[shiftCount:])		// Shift the buffer 1 vertical line of LEDs to left
-			var paddingBuffer = make([]byte, shiftCount + 1)	// Add empty char onto end of buffer so it can continue sliding "off-screen"
+			var shiftBuffer = append(buffer[shiftCount:])       // Shift the buffer 1 vertical line of LEDs to left
+			var paddingBuffer = make([]byte, shiftCount+1)      // Add empty char onto end of buffer so it can continue sliding "off-screen"
 			shiftBuffer = append(shiftBuffer, paddingBuffer...) // Concatenate the 2 buffers
-			
+
 			// Rotate the letters in the buffer
 			var rotatedBuffer = rotateCharacters(shiftBuffer, this.Rotation)
 
@@ -268,23 +268,23 @@ func (this *Matrix) SlideMessage(text string, font Font, condensePattern bool, p
 				}
 
 				// Move onto next LED block (cascade)
-				if (lineCount % 8 == 7) {
+				if lineCount%8 == 7 {
 					if (this.Rotation == RotateClockwise) || (this.Rotation == RotateClockwiseInvert) {
 						cascadeCount++
-					} else if (this.Rotation == RotateAntiClockwise) || (this.Rotation == RotateAntiClockwiseInvert){
+					} else if (this.Rotation == RotateAntiClockwise) || (this.Rotation == RotateAntiClockwiseInvert) {
 						cascadeCount--
 					}
 				}
 
 				// All LED lines for all LED blocks (cascades) rendered, we can break
-				if (lineCount == (this.Device.GetCascadeCount() * this.Device.GetLedLineCount()) - 1) {
+				if lineCount == (this.Device.GetCascadeCount()*this.Device.GetLedLineCount())-1 {
 					break
 				}
 			}
-			
+
 			// Delay for the specified time
 			time.Sleep(pixelDelay)
-			shiftCount++;
+			shiftCount++
 		}
 	}
 
@@ -292,7 +292,7 @@ func (this *Matrix) SlideMessage(text string, font Font, condensePattern bool, p
 }
 
 // Rotate the set of characters based on the Rotation specified, ultimately calls rotateCharacter()
-func rotateCharacters(character []byte, rotate Rotation) ([]byte) {
+func rotateCharacters(character []byte, rotate Rotation) []byte {
 	var totalCharacters = len(character) / 8
 	var rotatedCharacters = make([]byte, len(character))
 
@@ -301,7 +301,7 @@ func rotateCharacters(character []byte, rotate Rotation) ([]byte) {
 		end := (count * 8) + 8
 		characterBytes := rotateCharacter(character[start:end], rotate)
 		for i, byteValue := range characterBytes {
-			rotatedCharacters[(count * 8) + i] = byteValue
+			rotatedCharacters[(count*8)+i] = byteValue
 		}
 	}
 
@@ -309,23 +309,23 @@ func rotateCharacters(character []byte, rotate Rotation) ([]byte) {
 }
 
 // Rotate the specified character based on the Rotation specified
-func rotateCharacter(character []byte, rotate Rotation) ([]byte) {
-	var tempByte = []byte{0,0,0,0,0,0,0,0}
+func rotateCharacter(character []byte, rotate Rotation) []byte {
+	var tempByte = []byte{0, 0, 0, 0, 0, 0, 0, 0}
 
 	//No rotation, just return passed in character bit matrix
-	if (rotate == RotateNone) {
+	if rotate == RotateNone {
 		return character
 	}
 
 	// Rotate the character bit matrix anti-clockwise (minus 90 degrees)
 	if (rotate == RotateAntiClockwise) || (rotate == RotateClockwiseInvert) {
-		
+
 		var counter = 7
 		for outer := byte(0); outer < 8; outer++ {
 			var byteValue = character[outer]
 			for inner := byte(0); inner < 8; inner++ {
 				var bitValue = (byteValue >> inner) & 1
-				if (bitValue == 1) {
+				if bitValue == 1 {
 					tempByte[inner] = setBit(tempByte[inner], byte(counter))
 				}
 			}
@@ -337,13 +337,13 @@ func rotateCharacter(character []byte, rotate Rotation) ([]byte) {
 
 	// Rotate the character bit matrix clockwise (plus 90 degrees)
 	if (rotate == RotateClockwise) || (rotate == RotateAntiClockwiseInvert) {
-		
+
 		for outer := byte(0); outer < 8; outer++ {
 			var byteValue = character[outer]
 			var counter = 7
 			for inner := byte(0); inner < 8; inner++ {
 				var bitValue = (byteValue >> inner) & 1
-				if (bitValue == 1) {
+				if bitValue == 1 {
 					tempByte[counter] = setBit(tempByte[counter], outer)
 				}
 				counter--
@@ -358,6 +358,6 @@ func rotateCharacter(character []byte, rotate Rotation) ([]byte) {
 
 // Sets the bit at position in the byte value.
 func setBit(value byte, position byte) byte {
-    value |= (1 << position)
-    return value
+	value |= (1 << position)
+	return value
 }
