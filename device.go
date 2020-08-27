@@ -110,7 +110,6 @@ func (this *Device) sendBufferLine(position int) error {
 		buf[i*2] = byte(reg)
 		buf[i*2+1] = b
 	}
-	log.Debug("Send to bus: %v\n", buf)
 	_, err := this.spi.Xfer(buf)
 	if err != nil {
 		return err
